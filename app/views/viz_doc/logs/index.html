@@ -65,7 +65,7 @@
     $("#play").on('click', function(e){
       var endpoint = $("input[name=endpoint]").val()+"?vizdoc=true";
       $.when($.ajax(endpoint)).done(function(data){
-        $.when($.ajax("/log/show?filename="+data.filename)).done(function(data){
+        $.when($.ajax("/viz_doc/logs/show?filename="+data.filename)).done(function(data){
           window.karma = [];
           if(typeof window.animation_obj != "undefined")
             animation_obj.network.destroy();

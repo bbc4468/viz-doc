@@ -1,3 +1,5 @@
+$:.push File.expand_path("../lib", __FILE__)
+
 require File.expand_path("../lib/viz_doc/version", __FILE__)
 
 
@@ -7,9 +9,14 @@ Gem::Specification.new do |s|
   s.description = ""
   s.authors = [ "saurabh@tinyowl.co.in", "chaitanya.koparkar@tinyowl.co.in", "sunil.kumar@tinyowl.co.in"]
 
-  s.files = `git ls-files`.split("n")
-  s.executables = `git ls-files`.split("n").map{|f| f =~ /^bin/(.*)/ ? $1 : nil}.compact
-  s.require_path = 'lib'
+
+  s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
+  s.test_files = Dir["test/**/*"]
+
+  # s.files         = `git ls-files`.split($/).reject{ |f| f =~ /^examples/ }
+  # s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  # s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  # s.require_paths  = ['lib']
 
   s.version = VizDoc::VERSION
 end
