@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VizDoc</title>
+</head>
+<link rel="stylesheet" type="text/css" href="/assets/viz_doc/vis.min.css" />
+
+
+<body>
+<div class="control-pannel">
+    <form>
+      <span class="req-text">Request Endpoint</span>
+      <input type="search" placeholder="type text" name="endpoint" >
+    </form>
+    <br>
+    <a href="#" id="play" class="action-button shadow animate green">Play</a>
+    <a href="#" id="stop" class="action-button shadow animate blue">Pause</a>
+    <a href="#" id="replay" class="action-button shadow animate red">Replay</a>
+  </div>
+  <div id="animation">
+  </div>
+</body>
+
+<script src="/assets/viz_doc/jquery.min.js"></script>
+<script src="/assets/viz_doc/underscore-min.js"></script>
+<script src="/assets/viz_doc/vis.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    // sample data
+    // var data = [{
+    //  'id' : 0,
+    //  'class_name' : 'OrderController',
+    //  'method_name' : 'Index',
+    //  'params': '{order_id: 5}',
+    //  'calls' : [
+    //    {
+    //      'id' : 1,
+    //      'class_name' : 'User',
+    //      'method_name' : 'Find',
+    //      'params' : '{user_id : 10}',
+    //      'calls' : [],
+    //      'return_value' : 'user_data'
+    //    },
+    //    {
+    //      'id' : 2,
+    //      'class_name' : 'Order',
+    //      'method_name' : 'Find',
+    //      'params' : '{order_id : 5}',
+    //      'calls' : [
+    //        {
+    //          'id' : 3,
+    //          'class_name' : 'Restaurant',
+    //          'method_name' : 'Find',
+    //          'params' : '{restaurant_id : 100}',
+    //          'calls' : [],
+    //          'return_value' : 'restaurant_data'
+    //        }
+    //      ],
+    //      'return_value' : 'order_data'
+    //    }
+    //  ],
+    //  'return_value' : 'order json'
+    // }];
+
+    $("#play").on('click', function(e){
+      var endpoint = $("input[name=endpoint]").val()+"?vizdoc=true";
+      $.when($.ajax(endpoint)).done(function(data){
+        $.when($.ajax("/log/show?filename="+data.filename)).done(function(data){
+          window.karma = [];
+          if(typeof window.animation_obj != "undefined")
+            animation_obj.network.destroy();
+          window.animation_obj = init_animation();
+          animation_obj.nodes.add({id:'root', label: 'Start'});
+          simulate_animation(animation_obj, 'root', data);
+        });
+      });
+
+    });
+  });
+
+  simulate_animation = function(animation, root_id, data){
+    if(data.length == 0){
+      //process karma
+      last_karma = karma.pop();
+      if(last_karma == null) return;
+      animation.edges.add({to: last_karma.parent_id, from: last_karma.node_id, label: last_karma.return_value});
+      animation.network.selectNodes([last_karma.parent_id], false);
+      animation.network.focus(last_karma.parent_id, { animation: true});
+      setTimeout(function(){simulate_animation(animation, last_karma.parent_id, last_karma.siblings)}, 1000);
+    }
+    else {
+      node = data.splice(0, 1);
+      node = node[0];
+      animation.nodes.add({id: node.id, label: [node.class_name, node.method_name].join("::")});
+      animation.edges.add({to: node.id, from: root_id, label: node.params});
+      animation.network.selectNodes([node.id], false);
+      animation.network.focus(node.id, { animation: true});
+
+      setTimeout(function(){
+        karma.push({
+          parent_id: root_id,
+          node_id: node.id,
+          return_value: node.return_value,
+          siblings: data
+        });
+        simulate_animation(animation, node.id, node.calls);
+      }, 1000);
+    }
+  };
+
+  init_animation = function(){
+    nodes = new vis.DataSet();
+    edges = new vis.DataSet();
+
+    // create a network
+    var container = document.getElementById('animation');
+    var data = {
+        nodes: nodes,
+        edges: edges
+    };
+    var options = {
+      autoResize: true,
+      layout: {
+        hierarchical: {
+          enabled: true,
+          levelSeparation: 200,
+          direction: 'UD',   // UD, DU, LR, RL
+          sortMethod: 'directed'
+        }
+      },
+      edges: {
+        //physics: false,
+        arrows: 'to',
+        smooth: {
+          enabled: true,
+          type: 'curvedCW',
+          roundness: 0.3,
+        }
+      },
+      interaction: {
+        dragNodes: false
+      },
+      nodes: {
+        scaling: {
+          min: 10,
+          max: 30
+        },
+        shadow: true,
+        shape: 'ellipse',
+        color: {
+          highlight: "#f15c2c"
+        }
+      }
+    };
+    data.network = new vis.Network(container, data, options);
+    return data;
+  }
+
+
+
+</script>
+</html>
