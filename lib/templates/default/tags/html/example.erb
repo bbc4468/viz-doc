@@ -1,0 +1,35 @@
+<% if object.has_tag?(:example) %>
+
+
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    <% object.call_stacks.each do |call_stack| %>
+      <% unless call_stack.example.name.empty? %>
+        <p class="example_title"><%= htmlify_line(call_stack.example.name) %></p>
+      <% end %>
+      <pre class="example code">
+        <code><%= html_syntax_highlight(call_stack.example.text) %></code>
+        <a id="call_stack_<%= object.name %>_<%= call_stack.stack.first[:id] %>">Show Call Stack</a>
+      </pre>
+    <% end %>
+    <div id="call_stack_animation_<%= object.name %>" class="animation">
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    <% object.call_stacks.each do |call_stack| %>
+
+      $("#call_stack_<%= object.name %>_<%= call_stack.stack.first[:id] %>").on('click', function(e){
+        //debugger
+        //$("#call_stack_animation_<%= object.name %>").show();
+        window.karma = [];
+        if(typeof window.animation_obj != "undefined")
+          window.animation_obj.network.destroy();
+        window.animation_obj = init_animation($("#call_stack_animation_<%= object.name %>")[0]);
+        window.animation_obj.nodes.add({id:'root', label: 'Start'});
+        simulate_animation(animation_obj, 'root', <%= call_stack.stack.to_json %>);
+        //$("#call_stack_animation_<%= object.name %>").hide();
+      });
+    <% end %>
+  </script>
+<% end %>

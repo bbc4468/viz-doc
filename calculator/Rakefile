@@ -12,4 +12,6 @@ require 'yard'
 YARD::Rake::YardocTask.new
 
 task :default => :yard
-require './lib/viz_doc'
+require './../lib/viz_doc'
+require './calculator.rb'
+

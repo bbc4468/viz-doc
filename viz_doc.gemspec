@@ -11,7 +11,6 @@ Gem::Specification.new do |s|
 
 
   s.files = Dir["{app,config,db,lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.rdoc"]
-  s.test_files = Dir["test/**/*"]
 
   # s.files         = `git ls-files`.split($/).reject{ |f| f =~ /^examples/ }
   # s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
@@ -19,4 +18,12 @@ Gem::Specification.new do |s|
   # s.require_paths  = ['lib']
 
   s.version = VizDoc::VERSION
+
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'byebug'
+
+  s.add_dependency 'rails'
+  s.add_dependency 'yard'
+  s.add_dependency 'json'
+
 end
